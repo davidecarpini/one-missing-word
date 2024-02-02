@@ -58,7 +58,9 @@ function App() {
         <Heading fontSize={30}>One Missing Word</Heading>
         <Card>
           <CardHeader>
-            <Text>Insert here your known words:</Text>
+            <Text>
+              Insert here your known 11 words and your wallet address:
+            </Text>
           </CardHeader>
           <CardBody>
             <HStack gap={5} justifyContent={"center"} mb={20}>
@@ -78,7 +80,7 @@ function App() {
                   });
                 }}
               >
-                Paste Mnemonic
+                Paste 11 words
               </Button>
               <Button onClick={() => setMnemonic({})}>Clear</Button>
             </HStack>
@@ -105,10 +107,10 @@ function App() {
             </Grid>
           </CardBody>
         </Card>
-        <Card>
+        <Card mt={10}>
           <CardBody>
             <FormControl>
-              <FormLabel>Address</FormLabel>
+              <FormLabel>Wallet Address</FormLabel>
               <Input
                 type="text"
                 value={address}
@@ -120,7 +122,7 @@ function App() {
           </CardBody>
         </Card>
         <Button
-          mt={20}
+          my={20}
           onClick={async () => {
             setCalculate(true);
             setLoading(true);
@@ -141,18 +143,14 @@ function App() {
             ) : (
               <>
                 {validMnemonic ? (
-                  <>
-                    <CardHeader>
-                      <Text>We found your mnemonic:</Text>
-                    </CardHeader>
-                    <CardBody>
-                      <Text color="green">{validMnemonic.join(" ")}</Text>
-                      <Text color="orange">
-                        Warning: for security reasons please move all your funds
-                        in a new wallet!
-                      </Text>
-                    </CardBody>
-                  </>
+                  <CardBody>
+                    <Text>We found your mnemonic:</Text>
+                    <Text color="yellow">{validMnemonic.join(" ")}</Text>
+                    <Text color="red">
+                      WARNING: for security reasons please move all your funds
+                      in a new wallet!!
+                    </Text>
+                  </CardBody>
                 ) : (
                   <CardBody>
                     <Text color="red">No valid mnemonic found!</Text>

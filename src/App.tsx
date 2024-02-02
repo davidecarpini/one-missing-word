@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import "./App.css";
 import {
@@ -10,48 +11,83 @@ import {
   FormLabel,
   Grid,
   GridItem,
+  HStack,
   Heading,
   Input,
+  Spinner,
   Text,
   VStack,
 } from "@chakra-ui/react";
 import { wordlist } from "./wordlist";
+import {
+  mnemonic as Mnemonic,
+  address as Address,
+  secp256k1,
+} from "thor-devkit";
 
 function App() {
+  const [calculate, setCalculate] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [mnemonic, setMnemonic] = useState<{ [key: string]: string }>({});
-  const [validMnemonics, setValidMnemonics] = useState<string[][]>([]);
+  const [address, setAddress] = useState<string>("");
+  const [validMnemonic, setValidMnemonic] = useState<string[]>();
 
   // create a function that loop through the mnemonic array, add every word from bip39 wordlist in every position and if the mnemonic is valid add it to an array
   const findValidMnemonics = () => {
-    setValidMnemonics([]);
-    const validMnemonics: string[][] = [];
-    const mnemonicArray = Object.values(mnemonic);
+    const mnemonicArray = Object.values(mnemonic).filter((word) => word);
     for (let i = 0; i < mnemonicArray.length + 1; i++) {
-      for (let j = 0; j < 5; j++) {
+      for (let j = 0; j < 2048; j++) {
         const bip39Word = wordlist[j];
         const newMnemonic = [...mnemonicArray];
         newMnemonic.splice(i, 0, bip39Word);
-        validMnemonics.push(newMnemonic);
+        if (Mnemonic.validate(newMnemonic)) {
+          const privkey = Mnemonic.derivePrivateKey(newMnemonic);
+          if (
+            Address.fromPublicKey(secp256k1.derivePublicKey(privkey)) == address
+          ) {
+            return newMnemonic;
+          }
+        }
       }
     }
-    setValidMnemonics(validMnemonics);
   };
 
   return (
     <Container>
-      <VStack gap={30}>
+      <VStack>
         <Heading fontSize={30}>One Missing Word</Heading>
         <Card>
           <CardHeader>
             <Text>Insert here your known words:</Text>
           </CardHeader>
           <CardBody>
+            <HStack gap={5} justifyContent={"center"} mb={20}>
+              <Button
+                onClick={() => {
+                  navigator.clipboard.readText().then((text) => {
+                    const words = text.split(" ");
+                    if (words.length) {
+                      const mnemonic: { [key: string]: string } = {};
+                      words.forEach((word, index) => {
+                        if (index < 11) {
+                          mnemonic[index] = word;
+                        }
+                      });
+                      setMnemonic(mnemonic);
+                    }
+                  });
+                }}
+              >
+                Paste Mnemonic
+              </Button>
+              <Button onClick={() => setMnemonic({})}>Clear</Button>
+            </HStack>
             <Grid
-              templateRows="repeat(1, 1fr)"
+              templateRows="repeat(3, 1fr)"
               templateColumns="repeat(3, 1fr)"
               gap={20}
             >
-              {Array.from({ length: 3 }, (_, i) => (
+              {Array.from({ length: 11 }, (_, i) => (
                 <GridItem key={i}>
                   <FormControl>
                     <FormLabel>Word {i + 1}</FormLabel>
@@ -69,19 +105,63 @@ function App() {
             </Grid>
           </CardBody>
         </Card>
-        <Button onClick={findValidMnemonics}>Find Mnemonics</Button>
         <Card>
-          <CardHeader>
-            <Text>Valid Mnemonics:</Text>
-          </CardHeader>
           <CardBody>
-            {validMnemonics.map((validMnemonic) => (
-              <VStack key={validMnemonic.join(" ")}>
-                <Text>{validMnemonic.join(" ")}</Text>
-              </VStack>
-            ))}
+            <FormControl>
+              <FormLabel>Address</FormLabel>
+              <Input
+                type="text"
+                value={address}
+                onChange={(e) => {
+                  setAddress(e.target.value);
+                }}
+              />
+            </FormControl>
           </CardBody>
         </Card>
+        <Button
+          mt={20}
+          onClick={async () => {
+            setCalculate(true);
+            setLoading(true);
+            setTimeout(() => {
+              setValidMnemonic(undefined);
+              const newValidMnemonic = findValidMnemonics();
+              setLoading(false);
+              setValidMnemonic(newValidMnemonic);
+            }, 1);
+          }}
+        >
+          Find Mnemonic
+        </Button>
+        {calculate && (
+          <Card>
+            {loading ? (
+              <Spinner h={20} w={20} />
+            ) : (
+              <>
+                {validMnemonic ? (
+                  <>
+                    <CardHeader>
+                      <Text>We found your mnemonic:</Text>
+                    </CardHeader>
+                    <CardBody>
+                      <Text color="green">{validMnemonic.join(" ")}</Text>
+                      <Text color="orange">
+                        Warning: for security reasons please move all your funds
+                        in a new wallet!
+                      </Text>
+                    </CardBody>
+                  </>
+                ) : (
+                  <CardBody>
+                    <Text color="red">No valid mnemonic found!</Text>
+                  </CardBody>
+                )}
+              </>
+            )}
+          </Card>
+        )}
       </VStack>
     </Container>
   );

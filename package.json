@@ -13,9 +13,16 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@koale/useworker": "^4.0.2",
+    "@rollup/plugin-inject": "^5.0.5",
+    "@vechain/ethers": "^4.0.27-5",
     "framer-motion": "^11.0.3",
+    "node-stdlib-browser": "^1.2.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "thor-devkit": "^2.0.9",
+    "vite-plugin-notifier": "^0.1.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
@@ -27,6 +34,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "vite": "^5.0.8",
+    "vite-plugin-node-stdlib-browser": "^0.2.1"
   }
 }
